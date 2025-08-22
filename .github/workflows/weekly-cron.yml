@@ -1,0 +1,53 @@
+name: Weekly RegenHub Bot Cron Job
+
+on:
+  schedule:
+    # Run every Friday at 3:00 PM MST (10:00 PM UTC)
+    # Cron syntax: minute hour day month day-of-week
+    - cron: '0 22 * * 5'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  trigger-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger RegenHub Bot
+        run: |
+          echo "🕐 $(date): Starting weekly RegenHub bot check..."
+          
+          # Call the Vercel function
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X GET \
+            "https://regenhubmembershipbot-8rb13kvgb-omniharmonics-projects.vercel.app/api/cron/weekly-check" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: RegenHub-Bot-Cron/1.0")
+          
+          # Extract response body and status code
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
+          RESPONSE_BODY=$(echo "$RESPONSE" | head -n -1)
+          
+          echo "📊 Response Status: $HTTP_STATUS"
+          echo "📋 Response Body: $RESPONSE_BODY"
+          
+          # Check if the request was successful
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Weekly check completed successfully!"
+            echo "📅 Next run: Friday at 3:00 PM MST"
+          elif [ "$HTTP_STATUS" -eq 429 ]; then
+            echo "⚠️ Rate limited - this is expected if run too frequently"
+            echo "✅ Bot is working correctly, just rate limited"
+          elif [ "$HTTP_STATUS" -eq 401 ] || [ "$HTTP_STATUS" -eq 403 ]; then
+            echo "🔐 Authentication required - check Vercel deployment protection"
+            echo "💡 You may need to disable authentication or use a bypass token"
+            exit 1
+          else
+            echo "❌ Weekly check failed with status: $HTTP_STATUS"
+            echo "🔍 Response: $RESPONSE_BODY"
+            exit 1
+          fi
+      
+      - name: Log completion
+        run: |
+          echo "🎉 Weekly RegenHub bot execution completed at $(date)"
+          echo "📱 Check your Telegram group for the weekly report"
