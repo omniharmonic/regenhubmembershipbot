@@ -17,6 +17,8 @@ export class AirtableService {
       const startDate = startOfDay(cutoffDate);
       const endDate = endOfDay(new Date());
 
+      console.log(`Fetching applications from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+
       const records = await this.base(this.tableName)
         .select({
           filterByFormula: `AND(
@@ -26,6 +28,8 @@ export class AirtableService {
           sort: [{ field: 'Created', direction: 'desc' }]
         })
         .all();
+
+      console.log(`Raw Airtable records:`, JSON.stringify(records.map(r => ({ id: r.id, fields: r.fields })), null, 2));
 
       return records.map(record => ({
         id: record.id,
