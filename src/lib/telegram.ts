@@ -53,25 +53,60 @@ export class TelegramService {
         year: 'numeric'
       });
 
-      message += `${index + 1}. <b>${app.fields.name || 'Name not provided'}</b>\n`;
-      message += `   📧 ${app.fields.email || 'Email not provided'}\n`;
-      message += `   🏢 ${app.fields.organization || 'Organization not provided'}\n`;
-      message += `   👤 ${app.fields.role || 'Role not provided'}\n`;
+      // Map field names - Airtable field names might be different
+      const fields = app.fields;
+      const name = fields.Name || fields.name || fields['Full Name'] || fields['Full name'] || 'Name not provided';
+      const email = fields.Email || fields.email || 'Email not provided';
+      const organization = fields.Organization || fields.organization || fields.Company || fields.company || 'Organization not provided';
+      const role = fields.Role || fields.role || fields.Position || fields.position || 'Role not provided';
+      const phone = fields.Phone || fields.phone || fields.Telephone || fields.telephone || '';
+      const website = fields.Website || fields.website || fields.URL || fields.url || '';
+      const telegram = fields.Telegram || fields.telegram || fields['Telegram Handle'] || '';
+      const twitter = fields.Twitter || fields.twitter || fields['Twitter Handle'] || '';
+      const pointOfContact = fields['Point of Contact'] || fields['Point of contact'] || fields.Contact || fields.contact || '';
+      const membershipTier = fields['Membership Tier'] || fields['Membership tier'] || fields.Tier || fields.tier || '';
+      const financialSupport = fields['Financial Support'] || fields['Financial support'] || fields.Support || fields.support || '';
+      const description = fields.Description || fields.description || fields.Notes || fields.notes || '';
+
+      message += `${index + 1}. <b>${name}</b>\n`;
+      message += `   📧 ${email}\n`;
+      message += `   🏢 ${organization}\n`;
+      message += `   👤 ${role}\n`;
       message += `   📅 Applied: ${createdDate}\n`;
       
-      if (app.fields.phone) {
-        message += `   📞 ${app.fields.phone}\n`;
+      if (phone) {
+        message += `   📞 ${phone}\n`;
       }
       
-      if (app.fields.website) {
-        message += `   🌐 ${app.fields.website}\n`;
+      if (website) {
+        message += `   🌐 ${website}\n`;
+      }
+
+      if (telegram) {
+        message += `   💬 Telegram: ${telegram}\n`;
+      }
+
+      if (twitter) {
+        message += `   🐦 Twitter: ${twitter}\n`;
+      }
+
+      if (pointOfContact) {
+        message += `   👥 Point of Contact: ${pointOfContact}\n`;
+      }
+
+      if (membershipTier) {
+        message += `   🏆 Membership Tier: ${membershipTier}\n`;
+      }
+
+      if (financialSupport) {
+        message += `   💰 Financial Support: ${financialSupport}\n`;
       }
       
-      if (app.fields.description) {
-        const description = app.fields.description.length > 100 
-          ? app.fields.description.substring(0, 100) + '...'
-          : app.fields.description;
-        message += `   📝 ${description}\n`;
+      if (description) {
+        const desc = description.length > 100 
+          ? description.substring(0, 100) + '...'
+          : description;
+        message += `   📝 ${desc}\n`;
       }
       
       message += `\n`;
